@@ -1,4 +1,5 @@
 import { DEFAULT_CURRENCY_CODE, enableProdMode, LOCALE_ID } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 
 import { environment } from './environments/environment';
 import locale from '@angular/common/locales/de-CH';
@@ -21,6 +22,7 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: TitleStrategy, useClass: PageTitleStrategy },
     provideIonicAngular(),
+    provideHttpClient(),
     provideRouter(appRoutes, withPreloading(PreloadAllModules))
   ]
 }).catch(err => console.error(err));
