@@ -27,11 +27,11 @@
 <!------------->
 <!-- Content -->
 <!------------->
-<ion-content class="ion-padding">
+<ion-content class="ion-padding" [formGroup]="categoryForm">
   <!-- Input -->
   <ion-item>
     <ion-icon name="text" slot="start" />
-    <ion-input placeholder="Name" [maxlength]="40" [required]="true" />
+    <ion-input #nameInput formControlName="name" placeholder="Name" [maxlength]="40" [required]="true" />
   </ion-item>
 
   <!-- Delete Button -->
