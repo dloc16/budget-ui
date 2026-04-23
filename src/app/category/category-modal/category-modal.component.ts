@@ -1,21 +1,24 @@
 import { Component, inject } from '@angular/core';
 import {
-  IonHeader,
-  IonToolbar,
-  IonButtons,
   IonButton,
-  IonTitle,
+  IonButtons,
   IonContent,
-  IonItem,
-  IonIcon,
-  IonInput,
   IonFab,
   IonFabButton,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonTitle,
+  IonToolbar,
   ModalController
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
+import { CategoryService } from '../category.service';
+import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
+import { ToastService } from '../../shared/service/toast.service';
 
 @Component({
   selector: 'app-category-modal',
@@ -37,7 +40,17 @@ import { close, save, text, trash } from 'ionicons/icons';
 })
 export default class CategoryModalComponent {
   // DI
+  private readonly categoryService = inject(CategoryService);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
+  private readonly toastService = inject(ToastService);
+
+  // Form
+  readonly categoryForm = this.formBuilder.group({
+    id: [null! as string], // hidden
+    name: ['', [Validators.required, Validators.maxLength(40)]]
+  });
 
   // Lifecycle
   constructor() {
