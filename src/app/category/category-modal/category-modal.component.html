@@ -16,7 +16,7 @@
 
     <!-- Save Button -->
     <ion-buttons slot="end">
-      <ion-button (click)="save()">
+      <ion-button [disabled]="categoryForm.pristine || categoryForm.invalid" (click)="save()">
         <ion-icon slot="start" name="save" />
         Save
       </ion-button>

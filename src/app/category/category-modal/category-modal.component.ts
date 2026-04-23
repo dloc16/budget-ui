@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -11,7 +11,8 @@ import {
   IonItem,
   IonTitle,
   IonToolbar,
-  ModalController
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -40,13 +41,16 @@ import { finalize } from 'rxjs';
     IonFabButton
   ]
 })
-export default class CategoryModalComponent {
+export default class CategoryModalComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
+
+  // View Children
+  @ViewChild('nameInput') nameInput?: IonInput;
 
   // Form
   readonly categoryForm = this.formBuilder.group({
@@ -58,6 +62,10 @@ export default class CategoryModalComponent {
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, trash });
+  }
+
+  ionViewDidEnter(): void {
+    this.nameInput?.setFocus();
   }
 
   // Actions
@@ -80,7 +88,8 @@ export default class CategoryModalComponent {
         });
     });
   }
-    delete(): void {
+
+  delete(): void {
     this.modalCtrl.dismiss(null, 'delete');
   }
 }
