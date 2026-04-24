@@ -77,6 +77,11 @@
     </ion-row>
   </ion-grid>
 
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll [disabled]="lastPageReached" (ionInfinite)="loadNextCategoryPage($event)">
+    <ion-infinite-scroll-content />
+  </ion-infinite-scroll>
+
   <!-- Create Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button (click)="openModal()">

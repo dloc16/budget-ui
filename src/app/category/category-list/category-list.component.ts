@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import {
+  InfiniteScrollCustomEvent,
   IonButtons,
   IonCol,
   IonContent,
@@ -8,6 +9,8 @@ import {
   IonGrid,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonInput,
   IonItem,
   IonLabel,
@@ -54,7 +57,9 @@ import { Category, CategoryCriteria } from '../../shared/domain';
     IonFab,
     IonFabButton,
     IonProgressBar,
-    IonSkeletonText
+    IonSkeletonText,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent
   ]
 })
 export default class CategoryListComponent implements ViewDidEnter {
@@ -85,6 +90,11 @@ export default class CategoryListComponent implements ViewDidEnter {
     void modal.present();
     const { role } = await modal.onWillDismiss();
     console.log('role', role);
+  }
+
+  loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
+    this.searchCriteria.page++;
+    this.loadCategories(() => $event.target.complete());
   }
 
   // Helpers
