@@ -19,6 +19,11 @@
 <!-- Content -->
 <!------------->
 <ion-content>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" [disabled]="loading" (ionRefresh)="reloadCategories($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
   <ion-grid class="ion-padding">
     <!-- Search & Sort -->
     <ion-row>

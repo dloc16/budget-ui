@@ -16,6 +16,8 @@ import {
   IonLabel,
   IonMenuButton,
   IonProgressBar,
+  IonRefresher,
+  IonRefresherContent,
   IonRow,
   IonSelect,
   IonSelectOption,
@@ -23,6 +25,7 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
+  RefresherCustomEvent,
   ViewDidEnter
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -59,7 +62,9 @@ import { Category, CategoryCriteria } from '../../shared/domain';
     IonProgressBar,
     IonSkeletonText,
     IonInfiniteScroll,
-    IonInfiniteScrollContent
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent
   ]
 })
 export default class CategoryListComponent implements ViewDidEnter {
@@ -85,16 +90,21 @@ export default class CategoryListComponent implements ViewDidEnter {
   }
 
   // Actions
-  async openModal(): Promise<void> {
+  async openModal(_category?: Category): Promise<void> {
     const modal = await this.modalCtrl.create({ component: CategoryModalComponent });
     void modal.present();
     const { role } = await modal.onWillDismiss();
-    console.log('role', role);
+    if (role === 'refresh') this.reloadCategories();
   }
 
   loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
     this.searchCriteria.page++;
     this.loadCategories(() => $event.target.complete());
+  }
+
+  reloadCategories($event?: RefresherCustomEvent): void {
+    this.searchCriteria.page = 0;
+    this.loadCategories(() => $event?.target.complete());
   }
 
   // Helpers
