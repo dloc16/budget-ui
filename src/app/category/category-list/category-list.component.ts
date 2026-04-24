@@ -26,16 +26,17 @@ import {
   IonToolbar,
   ModalController,
   RefresherCustomEvent,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewDidLeave
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
-import { finalize } from 'rxjs';
+import { debounce, finalize, interval, Subscription } from 'rxjs';
 import CategoryModalComponent from '../category-modal/category-modal.component';
 import { CategoryService } from '../category.service';
 import { ToastService } from '../../shared/service/toast.service';
-import { Category, CategoryCriteria } from '../../shared/domain';
+import { Category, CategoryCriteria, SortOption } from '../../shared/domain';
 
 @Component({
   selector: 'app-category-list',
@@ -67,9 +68,10 @@ import { Category, CategoryCriteria } from '../../shared/domain';
     IonRefresherContent
   ]
 })
-export default class CategoryListComponent implements ViewDidEnter {
+export default class CategoryListComponent implements ViewDidEnter, ViewDidLeave {
   // DI
   private readonly categoryService = inject(CategoryService);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
 
@@ -79,6 +81,16 @@ export default class CategoryListComponent implements ViewDidEnter {
   lastPageReached = false;
   loading = false;
   searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
+
+  // Search Form
+  readonly searchForm = this.formBuilder.group({ name: [''], sort: [this.initialSort] });
 
   // Lifecycle
   constructor() {
@@ -86,7 +98,18 @@ export default class CategoryListComponent implements ViewDidEnter {
   }
 
   ionViewDidEnter(): void {
+    this.searchFormSubscription = this.searchForm.valueChanges
+      .pipe(debounce(searchParams => interval(searchParams.name?.length ? 400 : 0)))
+      .subscribe(searchParams => {
+        this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
+        this.loadCategories();
+      });
     this.loadCategories();
+  }
+
+  ionViewDidLeave(): void {
+    this.searchFormSubscription?.unsubscribe();
+    this.searchFormSubscription = undefined;
   }
 
   // Actions
