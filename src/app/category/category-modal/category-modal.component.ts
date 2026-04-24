@@ -12,7 +12,8 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewWillEnter
 } from '@ionic/angular/standalone';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -20,8 +21,9 @@ import { close, save, text, trash } from 'ionicons/icons';
 import { CategoryService } from '../category.service';
 import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
 import { ToastService } from '../../shared/service/toast.service';
-import { CategoryUpsertDto } from '../../shared/domain';
-import { finalize } from 'rxjs';
+import { ActionSheetService } from '../../shared/service/action-sheet.service';
+import { Category, CategoryUpsertDto } from '../../shared/domain';
+import { finalize, mergeMap } from 'rxjs';
 
 @Component({
   selector: 'app-category-modal',
@@ -41,8 +43,9 @@ import { finalize } from 'rxjs';
     IonFabButton
   ]
 })
-export default class CategoryModalComponent implements ViewDidEnter {
+export default class CategoryModalComponent implements ViewDidEnter, ViewWillEnter {
   // DI
+  private readonly actionSheetService = inject(ActionSheetService);
   private readonly categoryService = inject(CategoryService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
@@ -51,6 +54,9 @@ export default class CategoryModalComponent implements ViewDidEnter {
 
   // View Children
   @ViewChild('nameInput') nameInput?: IonInput;
+
+  // Passed into the component by the ModalController, available in the ionViewWillEnter
+  category: Category = {} as Category;
 
   // Form
   readonly categoryForm = this.formBuilder.group({
@@ -64,13 +70,17 @@ export default class CategoryModalComponent implements ViewDidEnter {
     addIcons({ close, save, text, trash });
   }
 
+  ionViewWillEnter(): void {
+    this.categoryForm.patchValue(this.category);
+  }
+
   ionViewDidEnter(): void {
     this.nameInput?.setFocus();
   }
 
   // Actions
   cancel(): void {
-    this.modalCtrl.dismiss(null, 'cancel');
+    void this.modalCtrl.dismiss(null, 'cancel');
   }
 
   save(): void {
@@ -82,7 +92,7 @@ export default class CategoryModalComponent implements ViewDidEnter {
         .subscribe({
           next: () => {
             this.toastService.displaySuccessToast('Category saved');
-            this.modalCtrl.dismiss(null, 'refresh');
+            void this.modalCtrl.dismiss(null, 'refresh');
           },
           error: error => this.toastService.displayWarningToast('Could not save category', error)
         });
@@ -90,6 +100,20 @@ export default class CategoryModalComponent implements ViewDidEnter {
   }
 
   delete(): void {
-    this.modalCtrl.dismiss(null, 'delete');
+    this.actionSheetService
+      .showDeletionConfirmation('Are you sure you want to delete this category?')
+      .pipe(mergeMap(() => this.loadingIndicatorService.showLoadingIndicator({ message: 'Deleting category' })))
+      .subscribe(loadingIndicator => {
+        this.categoryService
+          .deleteCategory(this.category.id!)
+          .pipe(finalize(() => loadingIndicator.dismiss()))
+          .subscribe({
+            next: () => {
+              this.toastService.displaySuccessToast('Category deleted');
+              void this.modalCtrl.dismiss(null, 'refresh');
+            },
+            error: error => this.toastService.displayWarningToast('Could not delete category', error)
+          });
+      });
   }
 }
