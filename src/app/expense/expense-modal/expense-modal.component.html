@@ -38,9 +38,9 @@
   <ion-item>
     <ion-icon name="pricetag" slot="start" />
     <ion-select formControlName="categoryId" interface="popover" placeholder="Category">
-      <ion-select-option> Einkauf </ion-select-option>
-      <ion-select-option> ÖV </ion-select-option>
-      <ion-select-option> Sport </ion-select-option>
+      @for (category of categories; track category.id) {
+        <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+      }
     </ion-select>
     <ion-button slot="end" (click)="showCategoryModal()">
       <ion-icon slot="icon-only" name="add" />
