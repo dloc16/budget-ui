@@ -25,6 +25,11 @@ import { addIcons } from 'ionicons';
 import { add, calendar, cash, close, pricetag, save, text, trash } from 'ionicons/icons';
 import CategoryModalComponent from '../../category/category-modal/category-modal.component';
 import { format } from 'date-fns';
+import { ExpenseService } from '../expense.service';
+import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
+import { ToastService } from '../../shared/service/toast.service';
+import { ExpenseUpsertDto } from '../../shared/domain';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-expense-modal',
@@ -54,6 +59,9 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   // DI
   private readonly modalCtrl = inject(ModalController);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly expenseService = inject(ExpenseService);
+  private readonly loadingIndicatorService = inject(LoadingIndicatorService);
+  private readonly toastService = inject(ToastService);
 
   // View Children
   @ViewChild('nameInput') nameInput?: IonInput;
@@ -82,7 +90,19 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   }
 
   save(): void {
-    void this.modalCtrl.dismiss(null, 'save');
+    this.loadingIndicatorService.showLoadingIndicator({ message: 'Saving expense' }).subscribe(loadingIndicator => {
+      const expense = this.expenseForm.value as ExpenseUpsertDto;
+      this.expenseService
+        .upsertExpense(expense)
+        .pipe(finalize(() => loadingIndicator.dismiss()))
+        .subscribe({
+          next: () => {
+            this.toastService.displaySuccessToast('Expense saved');
+            void this.modalCtrl.dismiss(null, 'refresh');
+          },
+          error: error => this.toastService.displayWarningToast('Could not save expense', error)
+        });
+    });
   }
 
   delete(): void {
