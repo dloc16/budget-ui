@@ -16,7 +16,7 @@
 
     <!-- Save Button -->
     <ion-buttons slot="end">
-      <ion-button (click)="save()">
+      <ion-button [disabled]="expenseForm.pristine || expenseForm.invalid" (click)="save()">
         <ion-icon slot="start" name="save" />
         Save
       </ion-button>
@@ -27,17 +27,17 @@
 <!------------->
 <!-- Content -->
 <!------------->
-<ion-content class="ion-padding">
+<ion-content class="ion-padding" [formGroup]="expenseForm">
   <!-- Name Input -->
   <ion-item>
     <ion-icon name="text" slot="start" />
-    <ion-input placeholder="Name" [maxlength]="40" [required]="true" />
+    <ion-input #nameInput formControlName="name" placeholder="Name" [maxlength]="40" [required]="true" />
   </ion-item>
 
   <!-- Category Select with Add Button -->
   <ion-item>
     <ion-icon name="pricetag" slot="start" />
-    <ion-select interface="popover" placeholder="Category">
+    <ion-select formControlName="categoryId" interface="popover" placeholder="Category">
       <ion-select-option> Einkauf </ion-select-option>
       <ion-select-option> ÖV </ion-select-option>
       <ion-select-option> Sport </ion-select-option>
@@ -50,7 +50,7 @@
   <!-- Amount Input -->
   <ion-item>
     <ion-icon name="cash" slot="start" />
-    <ion-input type="number" placeholder="Amount" [required]="true" />
+    <ion-input formControlName="amount" type="number" placeholder="Amount" [required]="true" />
     <ion-note slot="end">CHF</ion-note>
   </ion-item>
 
@@ -60,7 +60,7 @@
     <ion-datetime-button datetime="date"/>
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="date" presentation="date" />
+        <ion-datetime id="date" formControlName="date" presentation="date" />
       </ng-template>
     </ion-modal>
   </ion-item>

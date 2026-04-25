@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -17,12 +17,14 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
-  ModalController
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, calendar, cash, close, pricetag, save, text, trash } from 'ionicons/icons';
 import CategoryModalComponent from '../../category/category-modal/category-modal.component';
+import { format } from 'date-fns';
 
 @Component({
   selector: 'app-expense-modal',
@@ -48,13 +50,30 @@ import CategoryModalComponent from '../../category/category-modal/category-modal
     IonFabButton
   ]
 })
-export default class ExpenseModalComponent {
+export default class ExpenseModalComponent implements ViewDidEnter {
   // DI
   private readonly modalCtrl = inject(ModalController);
+  private readonly formBuilder = inject(FormBuilder);
+
+  // View Children
+  @ViewChild('nameInput') nameInput?: IonInput;
+
+  // Form
+  readonly expenseForm = this.formBuilder.group({
+    id: [null! as string], // hidden
+    name: ['', [Validators.required, Validators.maxLength(40)]],
+    categoryId: [null! as string],
+    amount: [null! as number, [Validators.required, Validators.min(0.01)]],
+    date: [format(new Date(), 'yyyy-MM-dd'), Validators.required]
+  });
 
   // Lifecycle
   constructor() {
     addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
+  }
+
+  ionViewDidEnter(): void {
+    this.nameInput?.setFocus();
   }
 
   // Actions
