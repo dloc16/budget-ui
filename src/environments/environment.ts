@@ -3,8 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  backendUrl: '/api'
+  production: true,
+  backendUrl: 'https://budget-service.onrender.com/api'
 };
 
 /*
