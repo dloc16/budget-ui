@@ -1,1 +1,74 @@
-Expense Modal
+<!------------>
+<!-- Header -->
+<!------------>
+<ion-header>
+  <ion-toolbar>
+    <!-- Cancel Button -->
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="cancel()">
+        <ion-icon slot="start" name="close" />
+        Cancel
+      </ion-button>
+    </ion-buttons>
+
+    <!-- Title -->
+    <ion-title>Add Expense</ion-title>
+
+    <!-- Save Button -->
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save" />
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<!------------->
+<!-- Content -->
+<!------------->
+<ion-content class="ion-padding">
+  <!-- Name Input -->
+  <ion-item>
+    <ion-icon name="text" slot="start" />
+    <ion-input placeholder="Name" [maxlength]="40" [required]="true" />
+  </ion-item>
+
+  <!-- Category Select with Add Button -->
+  <ion-item>
+    <ion-icon name="pricetag" slot="start" />
+    <ion-select interface="popover" placeholder="Category">
+      <ion-select-option> Einkauf </ion-select-option>
+      <ion-select-option> ÖV </ion-select-option>
+      <ion-select-option> Sport </ion-select-option>
+    </ion-select>
+    <ion-button slot="end" (click)="showCategoryModal()">
+      <ion-icon slot="icon-only" name="add" />
+    </ion-button>
+  </ion-item>
+
+  <!-- Amount Input -->
+  <ion-item>
+    <ion-icon name="cash" slot="start" />
+    <ion-input type="number" placeholder="Amount" [required]="true" />
+    <ion-note slot="end">CHF</ion-note>
+  </ion-item>
+
+  <!-- Date Input -->
+  <ion-item>
+    <ion-icon name="calendar" slot="start" />
+    <ion-datetime-button datetime="date"/>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="date" presentation="date" />
+      </ng-template>
+    </ion-modal>
+  </ion-item>
+
+  <!-- Delete Button -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="danger" (click)="delete()">
+      <ion-icon name="trash" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

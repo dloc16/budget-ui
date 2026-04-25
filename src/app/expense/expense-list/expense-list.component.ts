@@ -27,6 +27,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
+import ExpenseModalComponent from '../expense-modal/expense-modal.component';
 
 @Component({
   selector: 'app-expense-list',
@@ -65,7 +66,6 @@ export default class ExpenseListComponent {
 
   // Lifecycle
   constructor() {
-    // Add all used Ionic icons
     addIcons({ swapVertical, pricetag, search, alertCircleOutline, add, arrowBack, arrowForward });
   }
 
@@ -73,4 +73,11 @@ export default class ExpenseListComponent {
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number);
   };
+
+  async openModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({ component: ExpenseModalComponent });
+    void modal.present();
+    const { role } = await modal.onWillDismiss();
+    console.log('role', role);
+  }
 }

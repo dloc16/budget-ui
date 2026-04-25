@@ -42,7 +42,7 @@
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="pricetag" slot="start"/>
-          <ion-select interface="popover" placeholder="Categories" [multiple]="true" >
+          <ion-select interface="popover" placeholder="Categories" [multiple]="true">
             <ion-select-option> Einkauf </ion-select-option>
             <ion-select-option> ÖV </ion-select-option>
             <ion-select-option> Sport </ion-select-option>
@@ -64,7 +64,7 @@
         <ion-item-divider>
           <ion-label>25.04.2026</ion-label>
         </ion-item-divider>
-        <ion-item [button]="true" [detail]="true">
+        <ion-item [button]="true" [detail]="true" (click)="openModal()">
           <ion-label>Fleisch</ion-label>
           <ion-note slot="end">
             <ion-icon name="pricetag"/>
@@ -77,7 +77,7 @@
         <ion-item-divider>
           <ion-label>25.04.2026</ion-label>
         </ion-item-divider>
-        <ion-item [button]="true" [detail]="true">
+        <ion-item [button]="true" [detail]="true" (click)="openModal()">
           <ion-label>Monatsabo</ion-label>
           <ion-note slot="end">
             <ion-icon name="pricetag"/>
@@ -90,7 +90,7 @@
         <ion-item-divider>
           <ion-label>25.04.2026</ion-label>
         </ion-item-divider>
-        <ion-item [button]="true" [detail]="true">
+        <ion-item [button]="true" [detail]="true" (click)="openModal()">
           <ion-label>Tennis</ion-label>
           <ion-note slot="end">
             <ion-icon name="pricetag"/>
@@ -104,7 +104,7 @@
 
   <!-- Create Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button>
+    <ion-fab-button (click)="openModal()">
       <ion-icon name="add"/>
     </ion-fab-button>
   </ion-fab>
