@@ -49,4 +49,5 @@ export default class AppComponent {
     // Add all used Ionic icons
     addIcons({ analytics, logOut, podium, pricetag });
   }
+
 }

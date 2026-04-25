@@ -28,7 +28,8 @@ import { format } from 'date-fns';
 import { ExpenseService } from '../expense.service';
 import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
 import { ToastService } from '../../shared/service/toast.service';
-import { ExpenseUpsertDto } from '../../shared/domain';
+import { CategoryService } from '../../category/category.service';
+import { Category, ExpenseUpsertDto } from '../../shared/domain';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -60,11 +61,15 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   private readonly modalCtrl = inject(ModalController);
   private readonly formBuilder = inject(FormBuilder);
   private readonly expenseService = inject(ExpenseService);
+  private readonly categoryService = inject(CategoryService);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly toastService = inject(ToastService);
 
   // View Children
   @ViewChild('nameInput') nameInput?: IonInput;
+
+  // State
+  categories: Category[] = [];
 
   // Form
   readonly expenseForm = this.formBuilder.group({
@@ -82,6 +87,15 @@ export default class ExpenseModalComponent implements ViewDidEnter {
 
   ionViewDidEnter(): void {
     this.nameInput?.setFocus();
+    this.loadAllCategories();
+  }
+
+  // Helpers
+  private loadAllCategories(): void {
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
+      next: categories => (this.categories = categories),
+      error: error => this.toastService.displayWarningToast('Could not load categories', error)
+    });
   }
 
   // Actions
@@ -113,6 +127,6 @@ export default class ExpenseModalComponent implements ViewDidEnter {
     const categoryModal = await this.modalCtrl.create({ component: CategoryModalComponent });
     void categoryModal.present();
     const { role } = await categoryModal.onWillDismiss();
-    console.log('role', role);
+    if (role === 'refresh') this.loadAllCategories();
   }
 }

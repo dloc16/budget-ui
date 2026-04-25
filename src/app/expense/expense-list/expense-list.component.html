@@ -19,6 +19,11 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  <ion-toolbar>
+    @if (loading) {
+      <ion-progress-bar type="indeterminate" />
+    }
+  </ion-toolbar>
 </ion-header>
 
 <!------------->
@@ -60,44 +65,42 @@
     <!-- Expense List -->
     <ion-row>
       <ion-col>
-        <!-- Date Group 1 -->
-        <ion-item-divider>
-          <ion-label>25.04.2026</ion-label>
-        </ion-item-divider>
-        <ion-item [button]="true" [detail]="true" (click)="openModal()">
-          <ion-label>Fleisch</ion-label>
-          <ion-note slot="end">
-            <ion-icon name="pricetag"/>
-            Einkauf
-          </ion-note>
-          <ion-note slot="end">CHF 500.00</ion-note>
-        </ion-item>
+        @switch (expenses?.length) {
+          <!-- Skeleton -->
+          @case (null) {
+            @for (i of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; track i) {
+              <ion-item>
+                <ion-label>
+                  <ion-skeleton-text style="width: 80px" [animated]="true" />
+                </ion-label>
+              </ion-item>
+            }
+          }
 
-        <!-- Date Group 2 -->
-        <ion-item-divider>
-          <ion-label>25.04.2026</ion-label>
-        </ion-item-divider>
-        <ion-item [button]="true" [detail]="true" (click)="openModal()">
-          <ion-label>Monatsabo</ion-label>
-          <ion-note slot="end">
-            <ion-icon name="pricetag"/>
-            ÖV
-          </ion-note>
-          <ion-note slot="end">CHF 100.00</ion-note>
-        </ion-item>
+          <!-- Empty List -->
+          @case (0) {
+            <ion-item>
+              <ion-icon slot="start" name="alert-circle-outline" />
+              <ion-label> No expenses found </ion-label>
+            </ion-item>
+          }
 
-        <!-- Date Group 3 -->
-        <ion-item-divider>
-          <ion-label>25.04.2026</ion-label>
-        </ion-item-divider>
-        <ion-item [button]="true" [detail]="true" (click)="openModal()">
-          <ion-label>Tennis</ion-label>
-          <ion-note slot="end">
-            <ion-icon name="pricetag"/>
-            Sport
-          </ion-note>
-          <ion-note slot="end">CHF 100.00</ion-note>
-        </ion-item>
+          <!-- Expenses -->
+          @default {
+            @for (expense of expenses; track expense.id) {
+              <ion-item [button]="true" [detail]="true" (click)="openModal()">
+                <ion-label>{{ expense.name }}</ion-label>
+                @if (expense.category) {
+                  <ion-note slot="end">
+                    <ion-icon name="pricetag"/>
+                    {{ expense.category.name }}
+                  </ion-note>
+                }
+                <ion-note slot="end">CHF {{ expense.amount | number: '1.2-2' }}</ion-note>
+              </ion-item>
+            }
+          }
+        }
       </ion-col>
     </ion-row>
   </ion-grid>
