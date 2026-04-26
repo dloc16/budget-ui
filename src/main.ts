@@ -1,5 +1,5 @@
 import { DEFAULT_CURRENCY_CODE, enableProdMode, LOCALE_ID } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { environment } from './environments/environment';
 import locale from '@angular/common/locales/de-CH';
 import { bootstrapApplication } from '@angular/platform-browser';
@@ -10,6 +10,7 @@ import { registerLocaleData } from '@angular/common';
 import { PageTitleStrategy } from './app/shared/service/page-title-strategy.service';
 import AppComponent from './app/app.component';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+import { authInterceptor } from './app/shared/interceptor/auth.interceptor';
 
 if (environment.production) enableProdMode();
 
@@ -23,7 +24,7 @@ bootstrapApplication(AppComponent, {
     { provide: TitleStrategy, useClass: PageTitleStrategy },
     { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
     provideIonicAngular(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(appRoutes, withPreloading(PreloadAllModules))
   ]
 }).catch(err => console.error(err));
