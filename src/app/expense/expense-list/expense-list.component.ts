@@ -12,6 +12,7 @@ import {
   IonIcon,
   IonInput,
   IonItem,
+  IonItemDivider,
   IonLabel,
   IonMenuButton,
   IonNote,
@@ -29,11 +30,16 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
-import { finalize } from 'rxjs';
+import { finalize, from, groupBy, mergeMap, toArray } from 'rxjs';
 import ExpenseModalComponent from '../expense-modal/expense-modal.component';
 import { ExpenseService } from '../expense.service';
 import { ToastService } from '../../shared/service/toast.service';
 import { Expense, ExpenseCriteria } from '../../shared/domain';
+
+interface ExpenseGroup {
+  date: string;
+  expenses: Expense[];
+}
 
 @Component({
   selector: 'app-expense-list',
@@ -52,6 +58,7 @@ import { Expense, ExpenseCriteria } from '../../shared/domain';
     IonRow,
     IonCol,
     IonItem,
+    IonItemDivider,
     IonIcon,
     IonSelect,
     IonSelectOption,
@@ -72,7 +79,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
 
   // State
   date = set(new Date(), { date: 1 });
-  expenses: Expense[] | null = null;
+  expenseGroups: ExpenseGroup[] | null = null;
   readonly initialSort = 'date,desc';
   lastPageReached = false;
   loading = false;
@@ -80,7 +87,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
     page: 0,
     size: 25,
     sort: this.initialSort,
-    yearMonth: format(this.date, 'yyyyMM')    // → "202604"
+    yearMonth: format(this.date, 'yyyyMM')
   };
 
   // Lifecycle
@@ -96,7 +103,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number);
     this.searchCriteria.yearMonth = format(this.date, 'yyyyMM');
-    this.expenses = null;
+    this.expenseGroups = null;
     this.searchCriteria.page = 0;
     this.loadExpenses();
   };
@@ -116,9 +123,20 @@ export default class ExpenseListComponent implements ViewDidEnter {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: expenses => {
-          if (this.searchCriteria.page === 0 || !this.expenses) this.expenses = [];
-          this.expenses.push(...expenses.content);
+          if (this.searchCriteria.page === 0 || !this.expenseGroups) this.expenseGroups = [];
           this.lastPageReached = expenses.last;
+          // Group expenses by date
+          from(expenses.content)
+            .pipe(
+              groupBy(expense => expense.date),
+              mergeMap(group => group.pipe(toArray()))
+            )
+            .subscribe(expensesByDate => {
+              const date = expensesByDate[0].date;
+              const existingGroup = this.expenseGroups?.find(group => group.date === date);
+              if (existingGroup) existingGroup.expenses.push(...expensesByDate);
+              else this.expenseGroups?.push({ date, expenses: expensesByDate });
+            });
         },
         error: error => this.toastService.displayWarningToast('Could not load expenses', error)
       });
