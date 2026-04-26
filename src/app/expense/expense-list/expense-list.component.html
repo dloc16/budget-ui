@@ -30,6 +30,11 @@
 <!-- Content -->
 <!------------->
 <ion-content>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="reloadExpenses($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
   <ion-grid class="ion-padding">
     <!-- Sort, Filter & Search -->
     <ion-row>
@@ -109,6 +114,11 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll [disabled]="lastPageReached" (ionInfinite)="loadNextExpensePage($event)">
+    <ion-infinite-scroll-content />
+  </ion-infinite-scroll>
 
   <!-- Create Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">

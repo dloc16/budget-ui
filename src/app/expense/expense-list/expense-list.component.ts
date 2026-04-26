@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { addMonths, format, set } from 'date-fns';
 import {
+  InfiniteScrollCustomEvent,
   IonButton,
   IonButtons,
   IonCol,
@@ -10,6 +11,8 @@ import {
   IonGrid,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonInput,
   IonItem,
   IonItemDivider,
@@ -17,6 +20,8 @@ import {
   IonMenuButton,
   IonNote,
   IonProgressBar,
+  IonRefresher,
+  IonRefresherContent,
   IonRow,
   IonSelect,
   IonSelectOption,
@@ -24,6 +29,7 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
+  RefresherCustomEvent,
   ViewDidEnter
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
@@ -68,7 +74,11 @@ interface ExpenseGroup {
     IonFab,
     IonFabButton,
     IonProgressBar,
-    IonSkeletonText
+    IonSkeletonText,
+    IonRefresher,
+    IonRefresherContent,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent
   ]
 })
 export default class ExpenseListComponent implements ViewDidEnter {
@@ -103,24 +113,37 @@ export default class ExpenseListComponent implements ViewDidEnter {
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number);
     this.searchCriteria.yearMonth = format(this.date, 'yyyyMM');
-    this.expenseGroups = null;
-    this.searchCriteria.page = 0;
-    this.loadExpenses();
+    this.reloadExpenses();
   };
 
   async openModal(): Promise<void> {
     const modal = await this.modalCtrl.create({ component: ExpenseModalComponent });
     void modal.present();
     const { role } = await modal.onWillDismiss();
-    console.log('role', role);
+    if (role === 'refresh') this.reloadExpenses();
+  }
+
+  reloadExpenses($event?: RefresherCustomEvent): void {
+    this.searchCriteria.page = 0;
+    this.loadExpenses(() => $event?.target.complete());
+  }
+
+  loadNextExpensePage($event: InfiniteScrollCustomEvent): void {
+    this.searchCriteria.page++;
+    this.loadExpenses(() => $event.target.complete());
   }
 
   // Helpers
-  private loadExpenses(): void {
+  private loadExpenses(next: () => void = (): void => undefined): void {
     this.loading = true;
     this.expenseService
       .getExpenses(this.searchCriteria)
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          next();
+        })
+      )
       .subscribe({
         next: expenses => {
           if (this.searchCriteria.page === 0 || !this.expenseGroups) this.expenseGroups = [];
