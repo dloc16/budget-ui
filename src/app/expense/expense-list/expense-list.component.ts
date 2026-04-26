@@ -80,7 +80,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
     page: 0,
     size: 25,
     sort: this.initialSort,
-    yearMonth: format(this.date, 'yyyy-MM')
+    yearMonth: format(this.date, 'yyyyMM')    // → "202604"
   };
 
   // Lifecycle
@@ -95,7 +95,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
   // Actions
   addMonths = (number: number): void => {
     this.date = addMonths(this.date, number);
-    this.searchCriteria.yearMonth = format(this.date, 'yyyy-MM');
+    this.searchCriteria.yearMonth = format(this.date, 'yyyyMM');
     this.expenses = null;
     this.searchCriteria.page = 0;
     this.loadExpenses();
