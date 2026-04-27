@@ -30,17 +30,19 @@ import {
   IonToolbar,
   ModalController,
   RefresherCustomEvent,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewDidLeave
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
-import { finalize, from, groupBy, mergeMap, toArray } from 'rxjs';
+import { debounce, finalize, from, groupBy, interval, mergeMap, Subscription, toArray } from 'rxjs';
 import ExpenseModalComponent from '../expense-modal/expense-modal.component';
 import { ExpenseService } from '../expense.service';
 import { ToastService } from '../../shared/service/toast.service';
-import { Expense, ExpenseCriteria } from '../../shared/domain';
+import { Category, Expense, ExpenseCriteria, SortOption } from '../../shared/domain';
+import { CategoryService } from '../../category/category.service';
 
 interface ExpenseGroup {
   date: string;
@@ -53,6 +55,7 @@ interface ExpenseGroup {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -81,15 +84,18 @@ interface ExpenseGroup {
     IonInfiniteScrollContent
   ]
 })
-export default class ExpenseListComponent implements ViewDidEnter {
+export default class ExpenseListComponent implements ViewDidEnter, ViewDidLeave {
   // DI
   private readonly modalCtrl = inject(ModalController);
   private readonly expenseService = inject(ExpenseService);
+  private readonly categoryService = inject(CategoryService);
   private readonly toastService = inject(ToastService);
+  private readonly formBuilder = inject(FormBuilder);
 
   // State
   date = set(new Date(), { date: 1 });
   expenseGroups: ExpenseGroup[] | null = null;
+  categories: Category[] = [];
   readonly initialSort = 'date,desc';
   lastPageReached = false;
   loading = false;
@@ -99,6 +105,20 @@ export default class ExpenseListComponent implements ViewDidEnter {
     sort: this.initialSort,
     yearMonth: format(this.date, 'yyyyMM')
   };
+  readonly searchForm = this.formBuilder.group({
+    name: [''],
+    categoryIds: [[] as string[]],
+    sort: [this.initialSort]
+  });
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Date (newest first)', value: 'date,desc' },
+    { label: 'Date (oldest first)', value: 'date,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
 
   // Lifecycle
   constructor() {
@@ -106,7 +126,19 @@ export default class ExpenseListComponent implements ViewDidEnter {
   }
 
   ionViewDidEnter(): void {
+    this.loadAllCategories();
+    this.searchFormSubscription = this.searchForm.valueChanges
+      .pipe(debounce(searchParams => interval(searchParams.name?.length ? 400 : 0)))
+      .subscribe(searchParams => {
+        this.searchCriteria = { ...this.searchCriteria, ...(searchParams as Partial<ExpenseCriteria>), page: 0 };
+        this.loadExpenses();
+      });
     this.loadExpenses();
+  }
+
+  ionViewDidLeave(): void {
+    this.searchFormSubscription?.unsubscribe();
+    this.searchFormSubscription = undefined;
   }
 
   // Actions
@@ -134,6 +166,13 @@ export default class ExpenseListComponent implements ViewDidEnter {
   }
 
   // Helpers
+  private loadAllCategories(): void {
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
+      next: categories => (this.categories = categories),
+      error: error => this.toastService.displayWarningToast('Could not load categories', error)
+    });
+  }
+
   private loadExpenses(next: () => void = (): void => undefined): void {
     this.loading = true;
     this.expenseService

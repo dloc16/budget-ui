@@ -35,34 +35,33 @@
     <ion-refresher-content />
   </ion-refresher>
 
-  <ion-grid class="ion-padding">
+  <ion-grid class="ion-padding" [formGroup]="searchForm">
     <!-- Sort, Filter & Search -->
     <ion-row>
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="swap-vertical" slot="start"/>
-          <ion-select interface="popover">
-            <ion-select-option> Date (newest first) </ion-select-option>
-            <ion-select-option> Date (oldest first) </ion-select-option>
-            <ion-select-option> Name (A-Z) </ion-select-option>
-            <ion-select-option> Name (Z-A) </ion-select-option>
+          <ion-select formControlName="sort" interface="popover">
+            @for (sortOption of sortOptions; track sortOption.value) {
+              <ion-select-option [value]="sortOption.value">{{ sortOption.label }}</ion-select-option>
+            }
           </ion-select>
         </ion-item>
       </ion-col>
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="pricetag" slot="start"/>
-          <ion-select interface="popover" placeholder="Categories" [multiple]="true">
-            <ion-select-option> Einkauf </ion-select-option>
-            <ion-select-option> ÖV </ion-select-option>
-            <ion-select-option> Sport </ion-select-option>
+          <ion-select formControlName="categoryIds" interface="popover" placeholder="Categories" [multiple]="true">
+            @for (category of categories; track category.id) {
+              <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+            }
           </ion-select>
         </ion-item>
       </ion-col>
       <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="search" slot="start"/>
-          <ion-input placeholder="Search" [maxlength]="40" [clearInput]="true"/>
+          <ion-input formControlName="name" placeholder="Search" [maxlength]="40" [clearInput]="true"/>
         </ion-item>
       </ion-col>
     </ion-row>
