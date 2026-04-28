@@ -12,7 +12,7 @@
     </ion-buttons>
 
     <!-- Title -->
-    <ion-title>Add Expense</ion-title>
+    <ion-title>{{ expense.id ? 'Edit Expense' : 'Add Expense' }}</ion-title>
 
     <!-- Save Button -->
     <ion-buttons slot="end">
@@ -38,6 +38,7 @@
   <ion-item>
     <ion-icon name="pricetag" slot="start" />
     <ion-select formControlName="categoryId" interface="popover" placeholder="Category">
+      <ion-select-option [value]="null">No category</ion-select-option>
       @for (category of categories; track category.id) {
         <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
       }
@@ -65,10 +66,12 @@
     </ion-modal>
   </ion-item>
 
-  <!-- Delete Button -->
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button color="danger" (click)="delete()">
-      <ion-icon name="trash" />
-    </ion-fab-button>
-  </ion-fab>
+  <!-- Delete Button (only when editing) -->
+  @if (expense.id) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button color="danger" (click)="delete()">
+        <ion-icon name="trash" />
+      </ion-fab-button>
+    </ion-fab>
+  }
 </ion-content>

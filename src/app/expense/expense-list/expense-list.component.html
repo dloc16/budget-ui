@@ -96,7 +96,7 @@
                 <ion-label>{{ expenseGroup.date | date: 'dd.MM.yyyy' }}</ion-label>
               </ion-item-divider>
               @for (expense of expenseGroup.expenses; track expense.id) {
-                <ion-item [button]="true" [detail]="true" (click)="openModal()">
+                <ion-item [button]="true" [detail]="true" (click)="openModal(expense)">
                   <ion-label>{{ expense.name }}</ion-label>
                   @if (expense.category) {
                     <ion-note slot="end">

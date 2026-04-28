@@ -148,8 +148,11 @@ export default class ExpenseListComponent implements ViewDidEnter, ViewDidLeave 
     this.reloadExpenses();
   };
 
-  async openModal(): Promise<void> {
-    const modal = await this.modalCtrl.create({ component: ExpenseModalComponent });
+  async openModal(expense?: Expense): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ExpenseModalComponent,
+      componentProps: { expense: expense ?? {} }
+    });
     void modal.present();
     const { role } = await modal.onWillDismiss();
     if (role === 'refresh') this.reloadExpenses();

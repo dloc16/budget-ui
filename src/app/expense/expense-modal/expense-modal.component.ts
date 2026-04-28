@@ -18,7 +18,8 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewWillEnter
 } from '@ionic/angular/standalone';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -29,7 +30,7 @@ import { ExpenseService } from '../expense.service';
 import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
 import { ToastService } from '../../shared/service/toast.service';
 import { CategoryService } from '../../category/category.service';
-import { Category, ExpenseUpsertDto } from '../../shared/domain';
+import { Category, Expense, ExpenseUpsertDto } from '../../shared/domain';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -56,7 +57,7 @@ import { finalize } from 'rxjs';
     IonFabButton
   ]
 })
-export default class ExpenseModalComponent implements ViewDidEnter {
+export default class ExpenseModalComponent implements ViewDidEnter, ViewWillEnter {
   // DI
   private readonly modalCtrl = inject(ModalController);
   private readonly formBuilder = inject(FormBuilder);
@@ -68,6 +69,9 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   // View Children
   @ViewChild('nameInput') nameInput?: IonInput;
 
+  // Passed into the component by the ModalController
+  expense: Expense = {} as Expense;
+
   // State
   categories: Category[] = [];
 
@@ -75,7 +79,7 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   readonly expenseForm = this.formBuilder.group({
     id: [null! as string], // hidden
     name: ['', [Validators.required, Validators.maxLength(40)]],
-    categoryId: [null! as string],
+    categoryId: [null! as string | null],
     amount: [null! as number, [Validators.required, Validators.min(0.01)]],
     date: [format(new Date(), 'yyyy-MM-dd'), Validators.required]
   });
@@ -83,6 +87,13 @@ export default class ExpenseModalComponent implements ViewDidEnter {
   // Lifecycle
   constructor() {
     addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
+  }
+
+  ionViewWillEnter(): void {
+    this.expenseForm.patchValue({
+      ...this.expense,
+      categoryId: this.expense.category?.id
+    });
   }
 
   ionViewDidEnter(): void {
