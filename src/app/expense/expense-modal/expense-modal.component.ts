@@ -29,9 +29,10 @@ import { format } from 'date-fns';
 import { ExpenseService } from '../expense.service';
 import { LoadingIndicatorService } from '../../shared/service/loading-indicator.service';
 import { ToastService } from '../../shared/service/toast.service';
+import { ActionSheetService } from '../../shared/service/action-sheet.service';
 import { CategoryService } from '../../category/category.service';
 import { Category, Expense, ExpenseUpsertDto } from '../../shared/domain';
-import { finalize } from 'rxjs';
+import { finalize, mergeMap } from 'rxjs';
 
 @Component({
   selector: 'app-expense-modal',
@@ -65,6 +66,7 @@ export default class ExpenseModalComponent implements ViewDidEnter, ViewWillEnte
   private readonly categoryService = inject(CategoryService);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly toastService = inject(ToastService);
+  private readonly actionSheetService = inject(ActionSheetService);
 
   // View Children
   @ViewChild('nameInput') nameInput?: IonInput;
@@ -131,7 +133,21 @@ export default class ExpenseModalComponent implements ViewDidEnter, ViewWillEnte
   }
 
   delete(): void {
-    void this.modalCtrl.dismiss(null, 'delete');
+    this.actionSheetService
+      .showDeletionConfirmation('Are you sure you want to delete this expense?')
+      .pipe(mergeMap(() => this.loadingIndicatorService.showLoadingIndicator({ message: 'Deleting expense' })))
+      .subscribe(loadingIndicator => {
+        this.expenseService
+          .deleteExpense(this.expense.id!)
+          .pipe(finalize(() => loadingIndicator.dismiss()))
+          .subscribe({
+            next: () => {
+              this.toastService.displaySuccessToast('Expense deleted');
+              void this.modalCtrl.dismiss(null, 'refresh');
+            },
+            error: error => this.toastService.displayWarningToast('Could not delete expense', error)
+          });
+      });
   }
 
   async showCategoryModal(): Promise<void> {
