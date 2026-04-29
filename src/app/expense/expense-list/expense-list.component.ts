@@ -52,6 +52,28 @@ interface ExpenseGroup {
 @Component({
   selector: 'app-expense-list',
   templateUrl: './expense-list.component.html',
+  styles: [`
+    .category-note {
+      min-width: 120px;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      color: #1a1a1a !important;
+      font-weight: 500;
+    }
+    .amount-note {
+      min-width: 100px;
+      text-align: right;
+      color: #1a1a1a !important;
+      font-weight: 500;
+    }
+    ion-item-divider {
+      --color: #1a1a1a;
+      font-weight: 600;
+    }
+  `],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -166,6 +188,19 @@ export default class ExpenseListComponent implements ViewDidEnter, ViewDidLeave 
   loadNextExpensePage($event: InfiniteScrollCustomEvent): void {
     this.searchCriteria.page++;
     this.loadExpenses(() => $event.target.complete());
+  }
+
+  // Color helper
+  getCategoryColor(categoryName?: string): string {
+    if (!categoryName) return '';
+
+    // Index der kategorie in der categories liste
+    const index = this.categories.findIndex(c => c.name === categoryName);
+    if (index === -1) return '#999';
+
+    // Goldener winkel für maximale streuung
+    const hue = (index * 137.508) % 360;
+    return `hsl(${hue}, 70%, 50%)`;
   }
 
   // Helpers
