@@ -62,12 +62,14 @@ interface ExpenseGroup {
       gap: 4px;
       color: #1a1a1a !important;
       font-weight: 500;
+      font-size: 16px;
     }
     .amount-note {
       min-width: 100px;
       text-align: right;
       color: #1a1a1a !important;
       font-weight: 500;
+      font-size: 16px;
     }
     ion-item-divider {
       --color: #1a1a1a;
