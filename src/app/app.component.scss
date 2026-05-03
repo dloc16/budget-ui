@@ -20,6 +20,7 @@ ion-menu.md ion-note {
 ion-menu.md ion-list-header,
 ion-menu.md ion-note {
   padding-left: 10px;
+  text-align: center;
 }
 
 ion-menu.md ion-list#menu-list {
@@ -29,8 +30,9 @@ ion-menu.md ion-list#menu-list {
 ion-menu.md ion-list#menu-list ion-list-header {
   font-size: 22px;
   font-weight: 600;
-
   min-height: 20px;
+  text-align: center;
+  color: #6d28d9;          /* Violeter Header */
 }
 
 ion-menu.md ion-list#labels-list ion-list-header {
@@ -58,7 +60,7 @@ ion-menu.md ion-item.selected ion-icon {
 }
 
 ion-menu.md ion-item ion-icon {
-  color: #616e7e;
+  color: #6d28d9;
 }
 
 ion-menu.md ion-item ion-label {
